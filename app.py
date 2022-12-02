@@ -1,5 +1,4 @@
-from datetime import datetime
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory, session
 app = Flask(__name__)
 
 @app.route('/')
@@ -17,9 +16,13 @@ def favicon():
 
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
-   name = request.form.get('name')
+   global name
+   if request.method == 'POST':
+      name = request.form.get('name')      
 
    if name:
+       return render_template('dashboard.html', name = name)
+   elif "dashboard" in request.url:
        return render_template('dashboard.html', name = name)
    else:
        return redirect(url_for('login'))
