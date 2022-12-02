@@ -2,11 +2,13 @@ from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory
 app = Flask(__name__)
 
-
 @app.route('/')
-def index():
-   print('Request for index page received')
-   return render_template('index.html')
+def redirect_login():
+    return redirect(url_for('login'))
+
+@app.route('/login')
+def login():
+   return render_template('login.html')
 
 @app.route('/favicon.ico')
 def favicon():
@@ -20,7 +22,7 @@ def dashboard():
    if name:
        return render_template('dashboard.html', name = name)
    else:
-       return redirect(url_for('index'))
+       return redirect(url_for('login'))
 
 
 if __name__ == '__main__':
