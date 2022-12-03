@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import Column, Integer, String, Boolean, Date, Numeric
 
 from app import db
 
@@ -15,3 +15,23 @@ class Households(db.Model):
     CHILDREN = Column(String(5))
     def __str__(self):
         return self.HSHD_NUM
+
+class Products(db.Model):
+    __tablename__ = '400_products'
+    PRODUCT_NUM = Column(Integer)
+    DEPARTMENT = Column(String(10))
+    COMMODITY = Column(String(25))
+    BRAND_TY = Column(String(10))
+    NATURAL_ORGAINIC_FLAG = Column(String(1))
+
+class Transactions(db.Model):
+    __tablename__ = '400_transactions'
+    BASKET_NUM = Column(Integer)
+    HSHD_NUM = Column(Integer, primary_key=True)
+    PURCHASE = Column(Date)
+    PRODUCT_NUM = Column(Integer, primary_key=True)
+    SPEND = Column(Numeric)
+    UNITS = Column(Integer)
+    STORE_R = Column(String(10))
+    WEEK_NUM = Column(Integer)
+    YEAR = Column(Integer)
