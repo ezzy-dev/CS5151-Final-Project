@@ -1,5 +1,24 @@
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory, session
+import os
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+
+db = SQLAlchemy()
 app = Flask(__name__)
+
+DATABASE_URI = 'postgresql+psycopg2://{dbuser}:{dbpass}@{dbhost}/{dbname}'.format(
+    dbuser=os.environ['DBUSER'],
+    dbpass=os.environ['DBPASS'],
+    dbhost=os.environ['DBHOST'],
+    dbname=os.environ['DBNAME']
+)
+app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URI
+
+db = SQLAlchemy(app)
+
+migrate = Migrate(app, db)
+
+from models import Test
 
 @app.route('/')
 def redirect_login():
@@ -18,12 +37,15 @@ def favicon():
 def dashboard():
    global name
    if request.method == 'POST':
-      name = request.form.get('name')      
+      name = request.form.get('name') 
+
+   names = Test.query.all()     
 
    if name:
-       return render_template('dashboard.html', name = name)
+       return render_template('dashboard.html', name = name, names=names)
    elif "dashboard" in request.url:
-       return render_template('dashboard.html', name = name)
+       print("test")
+       return render_template('dashboard.html', name = name, names=names)
    else:
        return redirect(url_for('login'))
 
