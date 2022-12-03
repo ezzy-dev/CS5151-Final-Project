@@ -4,8 +4,8 @@ content %}
   <h2 class="fw-bold text-center mt-4">Hello, {{name}}</h2>
   <div class="flex-grow-1">
     <div class="p4 text-center">
-      {% for name in names %}
-      <p class="text-center">{{ name.name }}</p>
+      {% for x in households %}
+      <p class="text-center">{{ x.HSHD_NUM }}</p>
       {% endfor %}
     </div>
   </div>

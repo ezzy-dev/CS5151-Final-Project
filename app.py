@@ -18,7 +18,7 @@ db = SQLAlchemy(app)
 
 migrate = Migrate(app, db)
 
-from models import Test
+from models import Households
 
 @app.route('/')
 def redirect_login():
@@ -39,13 +39,13 @@ def dashboard():
    if request.method == 'POST':
       name = request.form.get('name') 
 
-   names = Test.query.all()     
+   households = Households.query.all()     
 
    if name:
-       return render_template('dashboard.html', name = name, names=names)
+       return render_template('dashboard.html', name = name, households = households)
    elif "dashboard" in request.url:
        print("test")
-       return render_template('dashboard.html', name = name, names=names)
+       return render_template('dashboard.html', name = name, households = households)
    else:
        return redirect(url_for('login'))
 
