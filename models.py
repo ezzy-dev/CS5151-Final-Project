@@ -18,11 +18,11 @@ class Households(db.Model):
 
 class Products(db.Model):
     __tablename__ = '400_products'
-    PRODUCT_NUM = Column(Integer)
+    PRODUCT_NUM = Column(Integer, primary_key=True)
     DEPARTMENT = Column(String(10))
     COMMODITY = Column(String(25))
     BRAND_TY = Column(String(10))
-    NATURAL_ORGAINIC_FLAG = Column(String(1))
+    NATURAL_ORGANIC_FLAG = Column(String(1))
 
 class Transactions(db.Model):
     __tablename__ = '400_transactions'

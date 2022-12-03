@@ -1,7 +1,8 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory
-from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import sessionmaker
 
 db = SQLAlchemy()
 app = Flask(__name__)
@@ -15,10 +16,12 @@ DATABASE_URI = 'postgresql+psycopg2://{dbuser}:{dbpass}@{dbhost}/{dbname}'.forma
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URI
 
 db = SQLAlchemy(app)
-
 migrate = Migrate(app, db)
+engine = db.create_engine(DATABASE_URI)
+Session = sessionmaker(bind = engine)
+session = Session()
 
-from models import Households
+from models import Households, Transactions, Products
 
 @app.route('/')
 def redirect_login():
@@ -35,19 +38,21 @@ def favicon():
 
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
-   global name
-   if request.method == 'POST':
-      name = request.form.get('name') 
+    global name
+    if request.method == 'POST':
+        name = request.form.get('name') 
 
-   households = Households.query.all()     
+    household_10 = session.query(Households).\
+        join(Transactions, Transactions.HSHD_NUM == Households.HSHD_NUM).\
+        join(Products, Products.PRODUCT_NUM == Transactions.PRODUCT_NUM).\
+        filter(Households.HSHD_NUM == 10).all()
 
-   if name:
-       return render_template('dashboard.html', name = name, households = households)
-   elif "dashboard" in request.url:
-       print("test")
-       return render_template('dashboard.html', name = name, households = households)
-   else:
-       return redirect(url_for('login'))
+    if name:
+        return render_template('dashboard.html', name = name, households = household_10)
+    elif "dashboard" in request.url:
+        return render_template('dashboard.html', name = "user", households = household_10)
+    else:
+        return redirect(url_for('login'))
 
 
 if __name__ == '__main__':
