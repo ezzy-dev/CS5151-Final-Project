@@ -45,12 +45,14 @@ def example_pull():
 
     return render_template('example_pull.html', name = name, households = household_10)  
 
-@app.route('/search_input')
+@app.route('/search_input', methods=['GET', 'POST'])
 def search_input():
-    return render_template('search_input.html', hhs = hhs)
+    return render_template('search_input.html', name = name, hhs = hhs)
 
-@app.route('/search_pull')
-def search_pull(selected_num):
+@app.route('/search_pull', methods=['GET', 'POST'])
+def search_pull():
+    selected_num = request.form['hh']
+
     household_search = session.query(Households, Transactions, Products).\
         join(Transactions, Transactions.HSHD_NUM == Households.HSHD_NUM).\
         join(Products, Products.PRODUCT_NUM == Transactions.PRODUCT_NUM).\
