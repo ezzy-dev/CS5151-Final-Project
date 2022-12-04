@@ -8,10 +8,10 @@ db = SQLAlchemy()
 app = Flask(__name__)
 
 DATABASE_URI = 'postgresql+psycopg2://{dbuser}:{dbpass}@{dbhost}/{dbname}'.format(
-    dbuser=os.environ['DBUSER'],
-    dbpass=os.environ['DBPASS'],
-    dbhost=os.environ['DBHOST'],
-    dbname=os.environ['DBNAME']
+    dbuser='myersadmin',
+    dbpass='Password4Azure!',
+    dbhost='postgres-myers.postgres.database.azure.com',
+    dbname='flask_db'
 )
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URI
 
@@ -43,11 +43,29 @@ def example_pull():
         join(Products, Products.PRODUCT_NUM == Transactions.PRODUCT_NUM).\
         filter(Households.HSHD_NUM == 10).all()
 
-    return render_template('example_pull.html', name = name, households = household_10)                 
+    return render_template('example_pull.html', name = name, households = household_10)  
+
+@app.route('/search_input')
+def search_input():
+    return render_template('search_input.html', hhs = hhs)
+
+@app.route('/search_pull')
+def search_pull(selected_num):
+    household_search = session.query(Households, Transactions, Products).\
+        join(Transactions, Transactions.HSHD_NUM == Households.HSHD_NUM).\
+        join(Products, Products.PRODUCT_NUM == Transactions.PRODUCT_NUM).\
+        filter(Households.HSHD_NUM == selected_num).all()
+
+    return render_template('search_pull.html', name = name, households = household_search, hhs = hhs, selected_num = selected_num)  
 
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
     global name
+    global hhs
+    hhst = session.query(Households.HSHD_NUM).order_by(Households.HSHD_NUM).all()
+    i = 0
+    hhs = [item[i] for item in hhst]
+
     if request.method == 'POST':
         name = request.form.get('name') 
 
@@ -57,7 +75,6 @@ def dashboard():
         return render_template('dashboard.html', name = "user")
     else:
         return redirect(url_for('login'))
-
 
 if __name__ == '__main__':
    app.run()
