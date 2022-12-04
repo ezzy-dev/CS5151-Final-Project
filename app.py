@@ -36,21 +36,25 @@ def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'),
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
+@app.route('/example_pull')
+def example_pull():
+    household_10 = session.query(Households, Transactions, Products).\
+        join(Transactions, Transactions.HSHD_NUM == Households.HSHD_NUM).\
+        join(Products, Products.PRODUCT_NUM == Transactions.PRODUCT_NUM).\
+        filter(Households.HSHD_NUM == 10).all()
+
+    return render_template('example_pull.html', name = name, households = household_10)                 
+
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
     global name
     if request.method == 'POST':
         name = request.form.get('name') 
 
-    household_10 = session.query(Households).\
-        join(Transactions, Transactions.HSHD_NUM == Households.HSHD_NUM).\
-        join(Products, Products.PRODUCT_NUM == Transactions.PRODUCT_NUM).\
-        filter(Households.HSHD_NUM == 10).all()
-
     if name:
-        return render_template('dashboard.html', name = name, households = household_10)
+        return render_template('dashboard.html', name = name)
     elif "dashboard" in request.url:
-        return render_template('dashboard.html', name = "user", households = household_10)
+        return render_template('dashboard.html', name = "user")
     else:
         return redirect(url_for('login'))
 

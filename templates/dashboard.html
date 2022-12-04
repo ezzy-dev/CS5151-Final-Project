@@ -2,61 +2,7 @@
 content %}
 <div class="d-flex flex-column flex-grow-1">
   <h2 class="fw-bold text-center mt-4">Hello, {{name}}</h2>
-  <div class="flex-grow-1">
-    <table class="p4 text-center table table-striped">
-      <thead>
-        <tr>
-          <th>Household Number</th>
-          <th>Loyalty Flag</th>
-          <th>Age Range</th>
-          <th>Marital Status</th>
-          <th>Income Range</th>
-          <th>Homeowner Description</th>
-          <th>Household Composition</th>
-          <th>Household Size</th>
-          <th>Number of Children</th>
-          <th>Basket number</th>
-          <th>Date of Purchase</th>
-          <th>Product Number</th>
-          <th>Spent Amount</th>
-          <th>Units Purchased</th>
-          <th>Store Region</th>
-          <th>Week Number</th>
-          <th>Year</th>
-          <th>Department</th>
-          <th>Commodity</th>
-          <th>Brand Type</th>
-          <th>Natural/Organic Flag</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for household in households %}
-        <tr>
-          <td>{{ household.HSHD_NUM }}</td>
-          <td>{{ household.L }}</td>
-          <td>{{ household.AGE_RANGE }}</td>
-          <td>{{ household.MARITAL }}</td>
-          <td>{{ household.INCOME_RANGE }}</td>
-          <td>{{ household.HOMEOWNER }}</td>
-          <td>{{ household.HSHD_COMPOSITION }}</td>
-          <td>{{ household.HH_SIZE }}</td>
-          <td>{{ household.CHILDREN }}</td>
-          <td>{{ household.BASKET_NUM }}</td>
-          <td>{{ household.PURCHASE }}</td>
-          <td>{{ household.PRODUCT_NUM }}</td>
-          <td>{{ household.SPEND }}</td>
-          <td>{{ household.UNITS }}</td>
-          <td>{{ household.STORE_R }}</td>
-          <td>{{ household.WEEK_NUM }}</td>
-          <td>{{ household.YEAR }}</td>
-          <td>{{ household.DEPARTMENT }}</td>
-          <td>{{ household.COMMODITY }}</td>
-          <td>{{ household.BRAND_TY }}</td>
-          <td>{{ household.NATURAL_ORGANIC_FLAG }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+  <h2 class="fw-bold text-center">Dashboard</h2>
+  <div class="flex-grow-1 align-self-center p-5 pt-3"></div>
 </div>
 {% endblock %}
