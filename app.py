@@ -8,10 +8,10 @@ db = SQLAlchemy()
 app = Flask(__name__)
 
 DATABASE_URI = 'postgresql+psycopg2://{dbuser}:{dbpass}@{dbhost}/{dbname}'.format(
-    dbuser='myersadmin',
-    dbpass='Password4Azure!',
-    dbhost='postgres-myers.postgres.database.azure.com',
-    dbname='flask_db'
+    dbuser=os.environ['DBUSER'],
+    dbpass=os.environ['DBPASS'],
+    dbhost=os.environ['DBHOST'],
+    dbname=os.environ['DBNAME']
 )
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URI
 
