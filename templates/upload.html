@@ -2,7 +2,7 @@
 block content %}
 <div class="d-flex flex-column flex-grow-1">
   <h2 class="fw-bold text-center mt-4">Hello, {{name}}</h2>
-  <div class="align-self-center">
+  <div class="align-self-center d-flex flex-column align-items-center">
     <form
       method="POST"
       action="/uploader"
@@ -22,9 +22,15 @@ block content %}
         Upload
       </button>
     </form>
-    <p class="p-5">
+    <p class="p-5 w-25 text-center">
       After uploading your file, please go to the "Search Households" page and
       look for your HOUSE_NUM in the dropdown list.
+    </p>
+    <p class="p-5 pt-0 w-25 text-center">
+      When uploading a CSV, please ensure that all rows from the tables
+      Households, Transactions, and Products are present. The system may fail to
+      read your file if all columns are not included (see the Example Data Pull
+      for HH #0001 in the assignment write-up for a list of all columns)
     </p>
   </div>
 </div>
