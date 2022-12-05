@@ -1,5 +1,6 @@
 import os
 import csv
+import time
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -79,8 +80,9 @@ def upload():
 def uploader():
     if request.method == 'POST':
         f = request.files['file']
-        f.save(os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(f.filename)))
-        tableString = readNewCSVData(app.config['UPLOAD_FOLDER'] + '\\' + secure_filename(f.filename))
+        newFileName = fileNameAppend(secure_filename(f.filename))
+        f.save(os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(newFileName)))
+        tableString = readNewCSVData(app.config['UPLOAD_FOLDER'] + '\\' + secure_filename(newFileName))
     return render_template('uploaded.html', name = name, tableString = tableString)
 
 @app.route('/dashboard', methods=['GET', 'POST'])
@@ -124,7 +126,6 @@ def readNewCSVData(file_path):
             if readSuccess == True:
                 if i > 0:
                     rows.append(line)
-                    print(rows[(i-1)])
             i += 1
 
         if readSuccess == True and len(rows) > 0:
@@ -141,19 +142,39 @@ def readNewCSVData(file_path):
             return('Error in reading CSV file, headers do not meet expectation')
 
 def writeNewCSVData(tableType, rows):
-    fpath = ''
-    if tableType == 1: #households
-        fpath = hfile_path
-    elif tableType == 2:
-        fpath = pfile_path #transactions
-    elif tableType == 3:
-        fpath = tfile_path #products
+    newRows = []
 
-    with open(fpath, 'a', newline ='') as f:
-        writer = csv.writer(f)
-        writer.writerows(rows)
+    if tableType == 1: #households
+        for row in rows:
+            print(row)
+            newRow = Households(HSHD_NUM = row[0], L = boolFix(row[1]), AGE_RANGE = row[2], MARITAL = row[3], INCOME_RANGE = row[4], HOMEOWNER = row[5], HSHD_COMPOSITION = row[6], HH_SIZE = row[7], CHILDREN = row[8])
+            newRows.append(newRow)
+    elif tableType == 2: #transactions
+        for row in rows:
+            newRow = Transactions(BASKET_NUM = row[0], HSHD_NUM = row[1], PURCHASE = row[2], PRODUCT_NUM = row[3], SPEND = row[4], UNITS = row[5], STORE_R = row[6], WEEK_NUM = row[7], YEAR = row[8])
+            newRows.append(newRow)
+    elif tableType == 3: #products
+        for row in rows:
+            newRow = Products(PRODUCT_NUM = row[0], DEPARTMENT = row[1], COMMODITY = row[2], BRAND_TY = row[3], NATURAL_ORGANIC_FLAG = row[4])
+            newRows.append(newRow)
+
+    for newRow in newRows:
+        session.add(newRow)
+
+    session.commit()
 
     return tableType
+
+def fileNameAppend(filename):
+    name, ext = os.path.splitext(filename)
+    timestr = time.strftime("%Y%m%d-%H%M%S")
+    return "{name}_{id}{ext}".format(name=name, id=timestr, ext=ext)
+
+def boolFix(obj):
+    if obj == 'TRUE' or '1':
+        return True
+    else:
+        return False
 
 if __name__ == '__main__':
    app.run()
