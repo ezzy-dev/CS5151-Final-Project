@@ -174,7 +174,11 @@ def writeNewCSVData(tableType, rows):
     for newRow in newRows:
         session.add(newRow)
 
-    session.commit()
+    try:
+        session.commit()
+    except Exception as ex:
+        app.logger.error(f"{ex.__class__.__name__}: {ex}")
+        session.rollback()
 
     return tableType
 

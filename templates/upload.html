@@ -3,11 +3,29 @@ block content %}
 <div class="d-flex flex-column flex-grow-1">
   <h2 class="fw-bold text-center mt-4">Hello, {{name}}</h2>
   <div class="align-self-center">
-      <form method="POST" action="/uploader" enctype="multipart/form-data">
-          <label class="text-center mt-4">Select new .csv file to upload additional data:</label>
-          <p><input type="file" name="file"></p>
-          <button type="submit" value="Submit" class="btn btn-sm btn-primary btn-block" formaction="{{ url_for('uploader')}}">Upload</button>
-      </form>
+    <form
+      method="POST"
+      action="/uploader"
+      enctype="multipart/form-data"
+      class="d-flex flex-column align-items-center"
+    >
+      <label class="text-center my-4"
+        >Select new .csv file to upload additional data:</label
+      >
+      <input type="file" name="file" class="mb-4" />
+      <button
+        type="submit"
+        value="Submit"
+        class="btn btn-sm btn-primary btn-block"
+        formaction="{{ url_for('uploader')}}"
+      >
+        Upload
+      </button>
+    </form>
+    <p class="p-5">
+      After uploading your file, please go to the "Search Households" page and
+      look for your HOUSE_NUM in the dropdown list.
+    </p>
   </div>
 </div>
 {% endblock %}
