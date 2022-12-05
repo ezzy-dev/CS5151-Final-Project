@@ -1,4 +1,6 @@
 import os
+import csv
+import time
 import pandas as pd
 import plotly
 import plotly.express as px
@@ -8,6 +10,7 @@ from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func
 from sqlalchemy.orm import sessionmaker
+from werkzeug.utils import secure_filename
 
 db = SQLAlchemy()
 app = Flask(__name__)
@@ -25,6 +28,15 @@ migrate = Migrate(app, db)
 engine = db.create_engine(DATABASE_URI)
 Session = sessionmaker(bind = engine)
 session = Session()
+
+relative_path = os.path.dirname(__file__)
+
+hfile_path = relative_path + '\\data\\400_households.csv'
+pfile_path = relative_path + '\\data\\400_products.csv'
+tfile_path = relative_path + '\\data\\400_transactions.csv'
+
+app.config['UPLOAD_EXTENSIONS'] = ['.csv']
+app.config['UPLOAD_FOLDER'] = relative_path + '\\uploads'
 
 from models import Households, Transactions, Products
 
@@ -70,6 +82,19 @@ def search_pull():
 
     return render_template('search_pull.html', name = name, households = household_search, hhs = hhs, selected_num = selected_num)  
 
+@app.route('/upload')
+def upload():
+    return render_template('upload.html', name = name)
+	
+@app.route('/uploader', methods = ['GET', 'POST'])
+def uploader():
+    if request.method == 'POST':
+        f = request.files['file']
+        newFileName = fileNameAppend(secure_filename(f.filename))
+        f.save(os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(newFileName)))
+        tableString = readNewCSVData(app.config['UPLOAD_FOLDER'] + '\\' + secure_filename(newFileName))
+    return render_template('uploaded.html', name = name, tableString = tableString)
+
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
     global name
@@ -90,6 +115,79 @@ def dashboard():
         commodity_graph = commodity_graph)
     else:
         return redirect(url_for('login'))
+
+def readNewCSVData(file_path):
+    with open(file_path, 'r') as f:
+        csv_reader = csv.reader(f)
+        i = 0
+        tableType = 0
+        readSuccess = False #if header matches
+        rows = []
+        for line in csv_reader:
+
+            #set table type by reading first header in first line
+            if i == 0 and line[0].lower() == 'hshd_num': #households
+                tableType = 1
+                readSuccess = True
+            elif i == 0 and line[0].lower() == 'basket_num': #transactions
+                tableType = 2
+                readSuccess = True
+            elif i == 0 and line[0].lower() == 'product_num': #products
+                tableType = 3
+                readSuccess = True
+
+            if readSuccess == True:
+                if i > 0:
+                    rows.append(line)
+            i += 1
+
+        if readSuccess == True and len(rows) > 0:
+            returnMessage = writeNewCSVData(tableType, rows)
+            tableString = ''
+            if returnMessage == 1:
+                tableString = 'Households'
+            elif returnMessage == 2:
+                tableString = 'Transactions'
+            elif returnMessage == 3:
+                tableString = 'Products'
+            return('Updated table "'+tableString+'"')
+        else:
+            return('Error in reading CSV file, headers do not meet expectation')
+
+def writeNewCSVData(tableType, rows):
+    newRows = []
+
+    if tableType == 1: #households
+        for row in rows:
+            print(row)
+            newRow = Households(HSHD_NUM = row[0], L = boolFix(row[1]), AGE_RANGE = row[2], MARITAL = row[3], INCOME_RANGE = row[4], HOMEOWNER = row[5], HSHD_COMPOSITION = row[6], HH_SIZE = row[7], CHILDREN = row[8])
+            newRows.append(newRow)
+    elif tableType == 2: #transactions
+        for row in rows:
+            newRow = Transactions(BASKET_NUM = row[0], HSHD_NUM = row[1], PURCHASE = row[2], PRODUCT_NUM = row[3], SPEND = row[4], UNITS = row[5], STORE_R = row[6], WEEK_NUM = row[7], YEAR = row[8])
+            newRows.append(newRow)
+    elif tableType == 3: #products
+        for row in rows:
+            newRow = Products(PRODUCT_NUM = row[0], DEPARTMENT = row[1], COMMODITY = row[2], BRAND_TY = row[3], NATURAL_ORGANIC_FLAG = row[4])
+            newRows.append(newRow)
+
+    for newRow in newRows:
+        session.add(newRow)
+
+    session.commit()
+
+    return tableType
+
+def fileNameAppend(filename):
+    name, ext = os.path.splitext(filename)
+    timestr = time.strftime("%Y%m%d-%H%M%S")
+    return "{name}_{id}{ext}".format(name=name, id=timestr, ext=ext)
+
+def boolFix(obj):
+    if obj == 'TRUE' or '1':
+        return True
+    else:
+        return False
 
 def get_graphs():
     sales = sales_graph()
