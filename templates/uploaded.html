@@ -1,0 +1,14 @@
+{% extends 'base.html' %} {% block title %}Upload New Data{% endblock %} {%
+block content %}
+<div class="d-flex flex-column flex-grow-1">
+  <h2 class="fw-bold text-center mt-4">Hello, {{name}}</h2>
+  <h3 class="fw-bold text-center mt-4 text-success">{{tableString}}</h3>
+  <div class="align-self-center">
+      <form method="POST" action="/uploader" enctype="multipart/form-data">
+          <label class="text-center mt-4">Select new .csv file to upload additional data:</label>
+          <p><input type="file" name="file"></p>
+          <button type="submit" value="Submit" class="btn btn-sm btn-primary btn-block" formaction="{{ url_for('uploader')}}">Upload</button>
+      </form>
+  </div>
+</div>
+{% endblock %}

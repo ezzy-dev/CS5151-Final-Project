@@ -1,8 +1,10 @@
 import os
+import csv
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import sessionmaker
+from werkzeug.utils import secure_filename
 
 db = SQLAlchemy()
 app = Flask(__name__)
@@ -20,6 +22,15 @@ migrate = Migrate(app, db)
 engine = db.create_engine(DATABASE_URI)
 Session = sessionmaker(bind = engine)
 session = Session()
+
+relative_path = os.path.dirname(__file__)
+
+hfile_path = relative_path + '\\data\\400_households.csv'
+pfile_path = relative_path + '\\data\\400_products.csv'
+tfile_path = relative_path + '\\data\\400_transactions.csv'
+
+app.config['UPLOAD_EXTENSIONS'] = ['.csv']
+app.config['UPLOAD_FOLDER'] = relative_path + '\\uploads'
 
 from models import Households, Transactions, Products
 
@@ -60,6 +71,18 @@ def search_pull():
 
     return render_template('search_pull.html', name = name, households = household_search, hhs = hhs, selected_num = selected_num)  
 
+@app.route('/upload')
+def upload():
+    return render_template('upload.html', name = name)
+	
+@app.route('/uploader', methods = ['GET', 'POST'])
+def uploader():
+    if request.method == 'POST':
+        f = request.files['file']
+        f.save(os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(f.filename)))
+        tableString = readNewCSVData(app.config['UPLOAD_FOLDER'] + '\\' + secure_filename(f.filename))
+    return render_template('uploaded.html', name = name, tableString = tableString)
+
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
     global name
@@ -77,6 +100,60 @@ def dashboard():
         return render_template('dashboard.html', name = "user")
     else:
         return redirect(url_for('login'))
+
+def readNewCSVData(file_path):
+    with open(file_path, 'r') as f:
+        csv_reader = csv.reader(f)
+        i = 0
+        tableType = 0
+        readSuccess = False #if header matches
+        rows = []
+        for line in csv_reader:
+
+            #set table type by reading first header in first line
+            if i == 0 and line[0].lower() == 'hshd_num': #households
+                tableType = 1
+                readSuccess = True
+            elif i == 0 and line[0].lower() == 'basket_num': #transactions
+                tableType = 2
+                readSuccess = True
+            elif i == 0 and line[0].lower() == 'product_num': #products
+                tableType = 3
+                readSuccess = True
+
+            if readSuccess == True:
+                if i > 0:
+                    rows.append(line)
+                    print(rows[(i-1)])
+            i += 1
+
+        if readSuccess == True and len(rows) > 0:
+            returnMessage = writeNewCSVData(tableType, rows)
+            tableString = ''
+            if returnMessage == 1:
+                tableString = 'Households'
+            elif returnMessage == 2:
+                tableString = 'Transactions'
+            elif returnMessage == 3:
+                tableString = 'Products'
+            return('Updated table "'+tableString+'"')
+        else:
+            return('Error in reading CSV file, headers do not meet expectation')
+
+def writeNewCSVData(tableType, rows):
+    fpath = ''
+    if tableType == 1: #households
+        fpath = hfile_path
+    elif tableType == 2:
+        fpath = pfile_path #transactions
+    elif tableType == 3:
+        fpath = tfile_path #products
+
+    with open(fpath, 'a', newline ='') as f:
+        writer = csv.writer(f)
+        writer.writerows(rows)
+
+    return tableType
 
 if __name__ == '__main__':
    app.run()
