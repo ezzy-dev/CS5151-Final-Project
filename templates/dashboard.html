@@ -1,8 +1,19 @@
 {% extends 'base.html' %} {% block title %}Dashboard{% endblock %} {% block
 content %}
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+
 <div class="d-flex flex-column flex-grow-1">
   <h2 class="fw-bold text-center mt-4">Hello, {{ name }}</h2>
   <h2 class="fw-bold text-center">Dashboard</h2>
-  <div class="flex-grow-1 align-self-center p-5 pt-3"></div>
+  <div class="flex-grow-1 align-self-center p-5 pt-3">
+    <div id="region_chart" class="chart">
+      <script>
+        var graphs ={{region_graphJSON | safe}};
+        Plotly.plot("region_chart", graphs, {});
+      </script>
+    </div>
+  </div>
 </div>
+
 {% endblock %}

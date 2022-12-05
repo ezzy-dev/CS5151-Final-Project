@@ -5,3 +5,5 @@ python-dotenv
 SQLAlchemy
 flask_migrate
 flask_wtf
+Pandas
+plotly

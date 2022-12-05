@@ -1,7 +1,12 @@
 import os
+import pandas as pd
+import plotly
+import plotly.express as px
+import json
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func
 from sqlalchemy.orm import sessionmaker
 
 db = SQLAlchemy()
@@ -76,12 +81,27 @@ def dashboard():
     if request.method == 'POST':
         name = request.form.get('name') 
 
+    households_region = session.query(func.count(Households.HSHD_NUM), Transactions.STORE_R).\
+        join(Transactions, Transactions.HSHD_NUM == Households.HSHD_NUM).\
+        group_by(Transactions.STORE_R)
+
+    region_df = pd.read_sql(households_region.statement.compile(engine), session.bind)
+    
+    region_fig = px.bar(region_df, x='STORE_R', y='count_1', 
+    title="Sales per Division",
+    labels = {
+        "STORE_R": "Store Region",
+        "count_1": "Number of stores"
+    })
+    region_graphJSON = json.dumps(region_fig, cls=plotly.utils.PlotlyJSONEncoder)
+
     if name:
-        return render_template('dashboard.html', name = name)
+        return render_template('dashboard.html', name = name, region_graphJSON = region_graphJSON)
     elif "dashboard" in request.url:
-        return render_template('dashboard.html', name = "user")
+        return render_template('dashboard.html', name = "user", region_graphJSON = region_graphJSON)
     else:
         return redirect(url_for('login'))
+
 
 if __name__ == '__main__':
    app.run()
